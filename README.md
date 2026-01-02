@@ -1,12 +1,8 @@
 # Window-sql
 
-# SQL Window Functions – RAD (Role Activity Document)
+# SQL Window Functions
 
-## Role
-**Data Analyst**
 
-## Activity
-Understanding and using **SQL Window Functions** for real-time analytical use cases without losing row-level data.
 
 ---
 
@@ -23,17 +19,4 @@ A **Window Function** performs calculations across a set of rows related to the 
 | Limited analytics | Advanced analytics |
 
 ---
-
-## 2. Sample Dataset
-
-### Table Structure
-
-```sql
-CREATE TABLE sales (
-    order_id INT,
-    emp_name VARCHAR(20),
-    department VARCHAR(20),
-    order_date DATE,
-    sales_amount INT
-);
 
