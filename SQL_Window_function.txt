@@ -21,6 +21,17 @@ VALUES
 ----------------------------------------------------------------------------------------------------------------
 SELECT * FROM sales;
 -----------------------------------------------------------------------------------------------------------------
+/* 
+What is Window function?
+A window function performs a calculation across a set of rows related to the current row, without collapsing rows like GROUP BY
+
+| GROUP BY        | Window Function           |
+| --------------- | ------------------------- |
+| Reduces rows    | Keeps all rows            |
+| Aggregates data | Adds calculated column    |
+| Summary view    | Detailed + analytics view |
+*/
+----------------------------------------------------------------------------------------------------------------------------------
 /* Total sales per department */
 
 /* with group by*/
@@ -145,3 +156,4 @@ SELECT *,
        LAG(order_date) OVER (PARTITION BY department order by sales_amount desc) as prev_sales_amount
        FROM sales;
 --------------------------------------------------------------------------------------------------------------------
+
