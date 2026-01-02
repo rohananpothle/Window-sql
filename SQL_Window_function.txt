@@ -1,0 +1,147 @@
+
+/* Please refer below query for creating sales table*/
+/*CREATE SALES TABLE*/
+
+CREATE TABLE sales (
+    order_id INT,
+    emp_name VARCHAR(20),
+    department VARCHAR(20),
+    order_date DATE,
+    sales_amount INT
+);
+
+INSERT INTO sales (order_id, emp_name, department, order_date, sales_amount)
+VALUES
+(1, 'Ramesh', 'IT', '2024-01-05', 5000),
+(2, 'Suresh', 'IT', '2024-01-10', 7000),
+(3, 'Mahesh', 'HR', '2024-01-08', 4000),
+(4, 'Ramesh', 'IT', '2024-02-05', 6000),
+(5, 'Mahesh', 'HR', '2024-02-15', 8000);
+
+----------------------------------------------------------------------------------------------------------------
+SELECT * FROM sales;
+-----------------------------------------------------------------------------------------------------------------
+/* Total sales per department */
+
+/* with group by*/
+SELECT department, sum(sales_amount) as Total_Sales
+from sales
+group by department;
+
+/* with window function*/
+SELECT *, SUM(sales_amount) OVER (PARTITION BY department order by department) as depart_total_sales
+FROM sales;
+------------------------------------------------------------------------------------------------------------------
+/* Syntax for window function
+
+FUNCTION_NAME(column)
+OVER(
+  PARTITION BY column(s) ORDER BY column(s)
+)
+
+Function_names: SUM(), AVG(), MIN(), MAX(), STD(), COUNT(), ROW_NUMBER(), RANK(), DENSE_RANK(), LEAD(), LAG()
+Partition by: Grouping (Like Group by)
+ORDER BY: Sorting the data.
+
+*/
+---------------------------------------------------------------------------------------------------------------------
+/* STATTISTIC FUNCTIONS */
+
+/* AVG() */
+SELECT *, avg(sales_amount) OVER (PARTITION BY department order by department) as depart_avg_sales
+FROM sales;
+
+/* MIN() */
+SELECT *, min(sales_amount) OVER (PARTITION BY department order by department) as depart_min_sales
+FROM sales;
+
+/* MAX() */
+SELECT *, max(sales_amount) OVER (PARTITION BY department order by department) as depart_max_sales
+FROM sales;
+
+/* std() */
+SELECT *, std(sales_amount) OVER (PARTITION BY department order by department) as depart_std_sales
+FROM sales;
+
+/* COUNT() */
+SELECT *, COUNT(sales_amount) OVER (PARTITION BY department order by department) as depart_count_sales
+FROM sales;
+----------------------------------------------------------------------------------------------------------------
+/* With Windows function */
+
+/* Find heighest sales per departent*/
+
+/* ROW_NUMBER()*/
+
+/* Assign Row Numbers to Employees Based on Sales within Each Department */
+SELECT *,
+       ROW_NUMBER() OVER (PARTITION BY department order by sales_amount desc) as Row_numbers
+       FROM sales;
+
+/* Identify the Top Sales Performer in Each Department Using ROW_NUMBER*/
+SELECT * FROM (SELECT *, 
+       ROW_NUMBER() OVER (PARTITION BY department order by sales_amount  desc) as Row_numbers
+       FROM sales) AS t
+       where row_numbers = 1
+
+--------------------------------------------------------------------------------------------
+/* SUB-SQUERY */
+SELECT department, * from sales
+where department in (SELECT department FROM sales_1 where department = 'IT');
+----------------------------------------------------------------------------------------------
+
+/* WITHOUT WINDOWS FUNCTION*/
+
+/* Find heighest sales per departent*/
+
+SELECT s.* from sales s
+JOIN(
+SELECT department, MAX(sales_amount) as Total_Sales
+from sales
+group by department  
+) m
+ON s.department = m.department
+AND s.sales_amount = m.Total_Sales
+ORDER BY department;
+-----------------------------------------------------------------------------------------------
+/*
+ASSIGNMENT: SUM(), AVG(), MIN(), MAX(), STD(), COUNT()
+Using GROUP BY CLAUSE
+*/
+--------------------------------------------------------------------------------------------------------------------
+/* Ranking Functions: RANK() and DENSE_RANK()*/
+/*
+RANK:
+*/
+SELECT *,
+       RANK() OVER (PARTITION BY department order by sales_amount desc) as sales_rank,
+       DENSE_RANK() OVER (PARTITION BY department order by sales_amount desc) as sales_dense_rank
+       FROM sales;
+
+/*
+
+| Function   | Behavior         |
+| ---------- | ---------------- |
+| RANK       | Skips ranks      |
+| DENSE_RANK | No gaps          |
+| ROW_NUMBER | Unique numbering |
+*/
+/*
+INSERT INTO sales VALUES (6, 'Kiran', 'IT', '2024-03-15', 7000);
+INSERT INTO sales VALUES (7, 'Priya', 'HR', '2024-02-28', 8000);
+DELETE FROM sales WHERE order_id IN (6, 7);
+SELECT * FROM sales;
+*/
+
+/* Positional Functions: LEAD() and LAG() */
+
+/*
+LEAD(column): Lead returns the next row value of the current row.
+LAG(column): Lag returns the value of the previous row.
+*/
+
+SELECT *,
+       LEAD(order_date) OVER (PARTITION BY department order by sales_amount desc) as next_sales_amount,
+       LAG(order_date) OVER (PARTITION BY department order by sales_amount desc) as prev_sales_amount
+       FROM sales;
+--------------------------------------------------------------------------------------------------------------------
