@@ -51,8 +51,17 @@ VALUES
 */
 SELECT * FROM customer_sales;
 /*
-MOM:
-MOM%(Month-on-Month change)=(Current revenue - Previous month revenue)/Previous month revenue * 100
+Month-On-Month Growth:
+
+MOM GROWTH = (CURRENT REVENUE - PREVIOUS REVENUE)/PREVIOUS REVENUE
+MOM Growth of JAN = (100000-null)/null = null
+MOM Growth of FEB = (120000-100000)/100000 = 0.2
+MOM Growth of MAR = (115000-120000)/120000 = -5000/120000 = -0.0416
+
+MOM GROWTH % = (CURRENT REVENUE - PREVIOUS REVENUE)/PREVIOUS REVENUE * 100
+MOM Growth of JAN % = null
+MOM Growth of FEB % = 0.2*100 = 20%
+MOM Growth of MAR % = -0.0416*100 = -4.16%
 */
 SELECT 
     month_date, 
