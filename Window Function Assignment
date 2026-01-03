@@ -1,0 +1,156 @@
+/*
+Scenario 1: The VIP List (Ranking)
+Business Need: Send gifts to the top 3 customers per country based on total spend. Ties should receive the same rank.
+
+Table: customer_sales
+
+CREATE TABLE customer_sales (
+    customer_name VARCHAR(50),
+    country VARCHAR(50),
+    total_spent INT
+);
+
+INSERT INTO customer_sales (customer_name, country, total_spent)
+VALUES
+    ('Liam', 'USA', 5000),
+    ('Noah', 'USA', 5000),
+    ('Emma', 'USA', 4500),
+    ('Sophia', 'USA', 3000),
+    ('Luca', 'Italy', 7000),
+    ('Matteo', 'Italy', 6500)
+    ('Carter', 'USA', 2000),
+    ('Rohan', 'UK', 5000);
+*/
+SELECT * FROM customer_sales;
+
+SELECT country, customer_name, total_spent
+FROM (
+    SELECT country, customer_name, total_spent,
+           DENSE_RANK() OVER(PARTITION BY country ORDER BY total_spent DESC) as rnk
+    FROM customer_sales
+) t
+WHERE rnk <= 3;
+
+---------------------------------------------------------------------------------------------------------------------
+
+/*
+Scenario 2: Growth Metrics
+Business Need: Calculate Monthly Revenue and the percentage change (MoM growth) compared to the previous month.
+
+CREATE TABLE monthly_revenue (
+    month_date DATE,
+    revenue DECIMAL(12, 2)
+);
+
+INSERT INTO monthly_revenue (month_date, revenue)
+VALUES 
+    ('2026-01-01', 100000.00),
+    ('2026-02-01', 120000.00),
+    ('2026-03-01', 115000.00);
+
+*/
+SELECT * FROM customer_sales;
+/*
+MOM:
+MOM%(Month-on-Month change)=(Current revenue - Previous month revenue)/Previous month revenue * 100
+*/
+SELECT 
+    month_date, 
+    revenue,
+    LAG(revenue) OVER(ORDER BY month_date) as prev_month_revenue,
+    ROUND(((revenue - LAG(revenue) OVER(ORDER BY month_date)) / 
+           LAG(revenue) OVER(ORDER BY month_date)) * 100, 2) as growth_pct
+FROM monthly_revenue;
+
+----------------------------------------------------------------------------------------------------------------------------------
+
+/*
+Scenario 3: Salary Benchmarking
+Business Need: Compare individual salaries to the department average without using GROUP BY (which would hide individual names).
+
+employee_payroll
+
+CREATE TABLE employee_payroll (
+    emp_name VARCHAR(50),
+    department VARCHAR(50),
+    salary INT
+);
+
+INSERT INTO employee_payroll (emp_name, department, salary)
+VALUES 
+    ('Alice', 'Engineering', 120000),
+    ('Bob', 'Engineering', 100000),
+    ('Charlie', 'Marketing', 80000),
+    ('Dana', 'Marketing', 90000);
+
+*/
+
+SELECT * FROM employee_payroll;
+
+SELECT emp_name, department, salary,
+       AVG(salary) OVER(PARTITION BY department) as dept_avg_salary
+FROM employee_payroll;
+
+-------------------------------------------------------------------------------------------------------------------------------------------------
+
+/*
+Scenario 4: Inventory Tracking (Running Totals)
+Business Need: Calculate a running total of stock and flag rows where the inventory level becomes impossible (drops below zero).
+
+inventory_events
+
+CREATE TABLE inventory_events (
+    event_time TIMESTAMP,
+    change_qty INT
+);
+
+INSERT INTO inventory_events (event_time, change_qty)
+VALUES 
+    ('2024-06-01 08:00:00', 100),
+    ('2024-06-01 09:30:00', -40),
+    ('2024-06-01 10:15:00', -70),
+    ('2024-06-01 11:00:00', 50);
+
+*/
+
+SELECT * FROM inventory_events;
+
+
+SELECT event_time, change_qty,
+       SUM(change_qty) OVER(ORDER BY event_time) as current_stock,
+       CASE 
+          WHEN SUM(change_qty) OVER(ORDER BY event_time) < 0 THEN 'DATA ERROR' 
+          ELSE 'VALID' 
+       END as stock_status
+FROM inventory_events;
+
+---------------------------------------------------------------------------------------------------------------------------------------------------------
+
+/*
+Scenario 5: Customer Lifecycle (Extremes)
+Business Need: For every order, display the customer's first ever purchase date and their most recent purchase date.
+
+order_history
+
+CREATE TABLE order_history (
+    order_id INT PRIMARY KEY,
+    customer_id VARCHAR(20),
+    order_date DATE
+);
+
+INSERT INTO order_history (order_id, customer_id, order_date)
+VALUES 
+    (1, 'CUST_A', '2026-01-01'),
+    (2, 'CUST_B', '2026-01-05'),
+    (3, 'CUST_A', '2026-02-15'),
+    (4, 'CUST_A', '2026-03-20');
+
+*/
+
+SELECT * FROM order_history;
+
+SELECT order_id, customer_id, order_date,
+       MIN(order_date) OVER(PARTITION BY customer_id) as first_ever_date,
+       MAX(order_date) OVER(PARTITION BY customer_id) as most_recent_date
+FROM order_history;
+-----------------------------------------------------------------------------------------------------------------------------------
